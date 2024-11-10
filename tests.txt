@@ -1,0 +1,31 @@
+Postman test
+
+POST:
+http://localhost:3000/users/register
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
+}
+/sondages/create
+{
+  "id": 1,
+  "title": "Best Programming Language",
+  "description": "Vote for the best programming language.",
+  "userId": 1
+}
+/options/add
+{
+  "id": 1,
+  "label": "JavaScript",
+  "sondageId": 1
+}
+
+http://localhost:3000/votes/cast
+{
+  "userId": 1,
+  "sondageId": 1,
+  "optionId": 1
+}
+get :http://localhost:3000/votes/results/1
