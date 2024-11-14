@@ -1,22 +1,51 @@
-const express = require('express');
+const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
+const express = require('express')
+const crypto = require('crypto');
 const router = express.Router();
+
+dotenv.config();
+
+const generateSecretKey = () => {
+  return crypto.randomBytes(32).toString('hex'); 
+};
+
+process.env.JWT_SECRET=generateSecretKey(); 
+
+
+
 
 // Register new user
 router.post('/register', (req, res) => {
   const { id, name, email, password } = req.body;
   const user = { id, name, email, password };
-  req.app.locals.users.push(user);  // Use shared users array
+  req.app.locals.users.push(user);  
   res.status(201).send("User registered successfully.");
 });
 
 // Login user
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
+
+  
   const user = req.app.locals.users.find(user => user.email === email && user.password === password);
+
   if (user) {
-    res.send("Login successful");
+    
+    const payload = { id: user.id, email: user.email };
+
+    
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ message: 'Server error: JWT_SECRET is missing' });
+    }
+
+    
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    
+    res.json({ message: 'Login successful', token });
   } else {
-    res.status(401).send("Invalid credentials");
+    res.status(401).send('Invalid credentials');
   }
 });
 

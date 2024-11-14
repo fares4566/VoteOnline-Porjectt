@@ -1,32 +1,36 @@
+const dotenv = require('dotenv');
 const express = require('express');
+const auth=require('./Middlewares/authMiddleware')
 const app = express();
 const PORT = 3000;
 
-app.use(express.json()); // Middleware to parse JSON request bodies
 
+
+app.use(express.json()); 
 // In-memory data
 const users = [];
 const sondages = [];
-const userVotes=[];
-// Import routes
+const userVotes = [];
+
+
 const userRoutes = require('./routes/authRoutes');
 const sondageRoutes = require('./routes/surveyRoutes');
 const optionRoutes = require('./routes/optionRoutes');
 const voteRoutes = require('./routes/voteRoutes');
 
-
-
-// Pass in-memory data to routes
-app.locals.users = users;  // Share users array
-app.locals.sondages = sondages;  // Share sondages array
-app.locals.userVotes = userVotes; 
+app.locals.users = users;  
+app.locals.sondages = sondages;  
+app.locals.userVotes = userVotes;
 
 // Use routes
-app.use('/users', userRoutes);  // Correctly using the router
-app.use('/sondages', sondageRoutes);
-app.use('/options', optionRoutes);
-app.use('/votes', voteRoutes);
+app.use('/users', userRoutes);  
 
+app.use(auth)
+app.use('/sondages',sondageRoutes);
+app.use('/options',optionRoutes);
+app.use('/votes' ,voteRoutes);
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
