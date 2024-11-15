@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manage Sondages</title>
+</head>
+<body>
+  <h1>Manage Sondages</h1>
+  <ul>
+    <% sondages.forEach(sondage => { %>
+      <li>
+        <%= sondage.title %> - <%= sondage.description %>
+        <form action="/admin/sondages/delete/<%= sondage.id %>" method="POST" style="display: inline;">
+          <button type="submit">Delete</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+  <a href="/admin/dashboard">Back to Dashboard</a>
+</body>
+</html>
