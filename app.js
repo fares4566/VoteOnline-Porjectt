@@ -1,6 +1,9 @@
 const dotenv = require('dotenv');
 const express = require('express');
 const auth=require('./Middlewares/authMiddleware')
+const cookieParser = require('cookie-parser');
+
+
 const app = express();
 const PORT = 3000;
 
@@ -24,7 +27,7 @@ const adminRoutes = require('./routes/adminRoutes');
 app.locals.users = users;  
 app.locals.sondages = sondages;  
 app.locals.userVotes = userVotes;
-
+app.use(cookieParser());
 // Use routes
 app.use('/users', userRoutes);  
 app.use('/admin', adminRoutes);

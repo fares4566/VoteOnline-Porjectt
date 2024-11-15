@@ -1,25 +1,23 @@
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
-const express = require('express')
+const express = require('express');
 const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 const router = express.Router();
 
 dotenv.config();
 
 const generateSecretKey = () => {
-  return crypto.randomBytes(32).toString('hex'); 
+  return crypto.randomBytes(32).toString('hex');
 };
 
-process.env.JWT_SECRET=generateSecretKey(); 
-
-
-
+process.env.JWT_SECRET = generateSecretKey();
 
 // Register new user
 router.post('/register', (req, res) => {
   const { id, name, email, password } = req.body;
   const user = { id, name, email, password };
-  req.app.locals.users.push(user);  
+  req.app.locals.users.push(user);
   res.status(201).send("User registered successfully.");
 });
 
@@ -27,22 +25,24 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
-  
   const user = req.app.locals.users.find(user => user.email === email && user.password === password);
 
   if (user) {
-    
     const payload = { id: user.id, email: user.email };
 
-    
     if (!process.env.JWT_SECRET) {
       return res.status(500).json({ message: 'Server error: JWT_SECRET is missing' });
     }
 
-    
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    
+    // Set the token as an HTTP-only cookie
+    res.cookie('auth_token', token, {
+      httpOnly: true, // Prevent access via client-side JavaScript
+      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+      maxAge: 3600000 // Cookie expiration in milliseconds (1 hour)
+    });
+
     res.json({ message: 'Login successful', token });
   } else {
     res.status(401).send('Invalid credentials');
