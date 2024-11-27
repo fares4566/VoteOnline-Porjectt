@@ -2,10 +2,18 @@ const dotenv = require('dotenv');
 const express = require('express');
 const auth=require('./Middlewares/authMiddleware')
 const cookieParser = require('cookie-parser');
-
+const connectDB = require('./db');
 
 const app = express();
+connectDB();
 const PORT = 3000;
+
+
+
+
+
+
+
 
 app.set('view engine', 'ejs');
 
@@ -39,6 +47,7 @@ app.use(auth)
 app.use('/sondages',sondageRoutes);
 app.use('/options',optionRoutes);
 app.use('/votes' ,voteRoutes);
+
 
 
 // Start the server
