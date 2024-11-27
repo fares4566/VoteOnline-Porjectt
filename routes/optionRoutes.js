@@ -1,44 +1,68 @@
 const express = require('express');
 const router = express.Router();
+const Sondage = require('../models/sondage'); 
 
-// Add an option to a sondage
-router.post('/add', (req, res) => {
-  const { id, label, sondageId } = req.body; // sondageId to associate option with a sondage
-  const sondage = req.app.locals.sondages.find(s => s.id === sondageId); // Check if the sondage exists
-  
-  if (sondage) {
-    const newOption = { id, label, votes: 0 }; // Create the new option
-    sondage.options.push(newOption); // Add option to sondage
-    res.status(201).send("Option added successfully.");
-  } else {
-    res.status(404).send("Sondage not found.");
-  }
-});
+router.post('/add', async (req, res) => {
+  const { label, sondageId } = req.body;
 
-// Modify an option
-router.put('/modify/:id', (req, res) => {
-  const { id } = req.params;
-  const { label } = req.body;
-  const option = req.app.locals.sondages.flatMap(s => s.options).find(o => o.id == id); // Flatten to find option
-  if (option) {
-    option.label = label;
-    res.send("Option modified successfully.");
-  } else {
-    res.status(404).send("Option not found.");
-  }
-});
+  try {
+    const sondage = await Sondage.findById(sondageId);
 
-// Delete an option
-router.delete('/delete/:id', (req, res) => {
-  const { id } = req.params;
-  for (const sondage of req.app.locals.sondages) {
-    const index = sondage.options.findIndex(o => o.id == id);
-    if (index !== -1) {
-      sondage.options.splice(index, 1); // Remove option from the sondage
-      return res.send("Option deleted successfully.");
+    if (!sondage) {
+      return res.status(404).json({ message: "Sondage not found." });
     }
+
+    const newOption = { libelle: label, votes: 0, sondage: sondageId };
+    sondage.options.push(newOption);
+
+    await sondage.save();
+
+    res.status(201).json({ message: "Option added successfully.", sondage });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding option.", error });
   }
-  res.status(404).send("Option not found.");
+});
+
+router.put('/modify/:id', async (req, res) => {
+  const { id } = req.params; 
+  const { label } = req.body;
+
+  try {
+    const sondage = await Sondage.findOne({ "options._id": id });
+
+    if (!sondage) {
+      return res.status(404).json({ message: "Option not found." });
+    }
+
+    const option = sondage.options.id(id);
+    option.libelle = label;
+
+    await sondage.save();
+
+    res.json({ message: "Option modified successfully.", option });
+  } catch (error) {
+    res.status(500).json({ message: "Error modifying option.", error });
+  }
+});
+
+router.delete('/delete/:id', async (req, res) => {
+  const { id } = req.params; 
+
+  try {
+    const sondage = await Sondage.findOne({ "options._id": id });
+
+    if (!sondage) {
+      return res.status(404).json({ message: "Option not found." });
+    }
+
+    sondage.options.id(id).remove();
+
+    await sondage.save();
+
+    res.json({ message: "Option deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting option.", error });
+  }
 });
 
 module.exports = router;

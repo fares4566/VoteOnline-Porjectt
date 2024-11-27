@@ -1,51 +1,51 @@
 const express = require('express');
 const router = express.Router();
+const Vote = require('../models/vote');  // Import the Vote model
+const Option = require('../models/option');  // Import the Option model
+const mongoose = require('mongoose');
 
-router.post('/cast', (req, res) => {
-  const { userId, sondageId, optionId } = req.body;
+// Cast a vote (without sondageId in req.body)
+router.post('/cast', async (req, res) => {
+  const { userId, optionId } = req.body;  // Only need userId and optionId
 
-  const userVotes = req.app.locals.userVotes;  // Access userVotes from app.locals
-
-  // Check if user has already voted in this sondage (any option, not just the same one)
-  const existingVote = userVotes.find(vote => vote.userId === userId && vote.sondageId === sondageId);
-
-  if (existingVote) {
-    return res.status(400).send("You have already voted in this sondage.");
+  if (!userId || !optionId) {
+    return res.status(400).send("Missing required fields: userId or optionId.");
   }
 
-  // Find the sondage
-  const sondages = req.app.locals.sondages;  // Access sondages from app.locals
-  const sondage = sondages.find(s => s.id === sondageId);
+  try {
+    // Check if the user has already voted for this option
+    const existingVote = await Vote.findOne({ user: userId, option: optionId });
 
-  if (sondage) {
-    // Find the option in the sondage
-    const option = sondage.options.find(o => o.id === optionId);
+    if (existingVote) {
+      return res.status(400).send("You have already voted for this option.");
+    }
 
-    if (option) {
-      // Cast the vote (increment votes count)
-      option.votes += 1;
+    // Validate and convert the optionId to ObjectId if needed
+    const optionObjectId = mongoose.Types.ObjectId(optionId);
+    
+    // Find the option and populate the sondage data
+    const option = await Option.findById(optionObjectId).populate('sondage');  // Populate the associated sondage
 
-      // Record the vote (so the user can't vote again in the same sondage)
-      userVotes.push({ userId, sondageId, optionId });
-
-      return res.status(201).send("Vote cast successfully.");
-    } else {
+    if (!option) {
       return res.status(404).send("Option not found.");
     }
-  } else {
-    return res.status(404).send("Sondage not found.");
-  }
-});
 
-router.get('/results/:sondageId', (req, res) => {
-  const { sondageId } = req.params;
-  const sondages = req.app.locals.sondages;  // Access sondages from app.locals
-  const sondage = sondages.find(s => s.id == sondageId);
+    if (!option.sondage) {
+      return res.status(404).send("Sondage not found for this option.");
+    }
 
-  if (sondage) {
-    return res.send(sondage.options); // Return options with vote counts
-  } else {
-    return res.status(404).send("Sondage not found.");
+    // Increment the votes count for the selected option
+    option.votes += 1;
+    await option.save();  // Save the updated option
+
+    // Record the vote in the Vote collection
+    const newVote = new Vote({ user: userId, option: optionId });
+    await newVote.save();  // Save the vote in the database
+
+    return res.status(201).send("Vote cast successfully.");
+  } catch (error) {
+    console.error("Error casting vote:", error);
+    return res.status(500).send("An error occurred while casting the vote.");
   }
 });
 

@@ -1,36 +1,53 @@
 const express = require('express');
 const router = express.Router();
+const Sondage = require('../models/sondage'); 
+const User = require('../models/user'); 
 
-// Create a new sondage
-router.post('/create', (req, res) => {
-  const { id, title, description, userId } = req.body; // userId to associate with creator
-  const newSondage = { id, title, description, userId, options: [] };
-  req.app.locals.sondages.push(newSondage);  // Use shared sondages array
-  res.status(201).send("Sondage created successfully.");
-});
+router.post('/create', async (req, res) => {
+  const { titre, description, userId, dateExpiration } = req.body; 
 
-// Modify a sondage
-router.put('/modify/:id', (req, res) => {
-  const { id } = req.params;
-  const { title, description } = req.body;
-  const sondage = req.app.locals.sondages.find(s => s.id == id);
-  if (sondage) {
-    sondage.title = title;
-    sondage.description = description;
-    res.send("Sondage modified successfully.");
-  } else {
-    res.status(404).send("Sondage not found.");
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const newSondage = new Sondage({
+      titre,
+      description,
+      dateCreation: new Date(),
+      dateExpiration: new Date(dateExpiration), 
+      statut: 'open', 
+      user: user._id
+    });
+    await newSondage.save();
+
+    res.status(201).json({ message: 'Sondage created successfully', sondage: newSondage });
+  } catch (error) {
+    res.status(500).json({ message: 'Error creating sondage', error });
   }
 });
 
-// Get a sondage by ID
-router.get('/:id', (req, res) => {
+router.put('/modify/:id', async (req, res) => {
   const { id } = req.params;
-  const sondage = req.app.locals.sondages.find(s => s.id == id);
-  if (sondage) {
-    res.send(sondage);
-  } else {
-    res.status(404).send("Sondage not found.");
+  const { titre, description, statut, dateExpiration } = req.body; 
+
+  try {
+    const sondage = await Sondage.findById(id);
+    if (!sondage) {
+      return res.status(404).json({ message: 'Sondage not found' });
+    }
+
+    if (titre) sondage.titre = titre;
+    if (description) sondage.description = description;
+    if (statut) sondage.statut = statut;
+    if (dateExpiration) sondage.dateExpiration = new Date(dateExpiration); 
+
+    await sondage.save();
+
+    res.json({ message: 'Sondage modified successfully', sondage });
+  } catch (error) {
+    res.status(500).json({ message: 'Error modifying sondage', error });
   }
 });
 

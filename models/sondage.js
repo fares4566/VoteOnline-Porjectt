@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const Option= require('./option')
 
 const SondageSchema = new Schema({
   titre: { type: String, required: true },
@@ -7,7 +8,7 @@ const SondageSchema = new Schema({
   dateCreation: { type: Date, default: Date.now },
   dateExpiration: { type: Date, required: true },
   statut: { type: String, enum: ['open', 'closed'], default: 'open' },
-  options: [{ type: Schema.Types.ObjectId, ref: 'Option' }],
+  options: [Option.schema],
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
