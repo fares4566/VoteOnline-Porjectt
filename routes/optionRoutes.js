@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Sondage = require('../models/sondage');
-const Option = require('../models/option');  // Using the Option model
+const mongoose = require('mongoose');
+const Sondage = require('../models/sondage'); 
+const Option = require('../models/option');   
 
-// Add a new option to a sondage
 router.post('/add', async (req, res) => {
   const { label, sondageId } = req.body;
 
@@ -17,21 +17,19 @@ router.post('/add', async (req, res) => {
       return res.status(404).json({ message: "Sondage not found." });
     }
 
-    // Embed the new option directly in the sondage
-    const newOption = { libelle: label, votes: 0, sondage: sondageId };
-    sondage.options.push(newOption);
+    const newOption = new Option({ libelle: label, votes: 0, sondage: sondageId });
+    await newOption.save();
 
-    await sondage.save(); // Save the updated sondage with the embedded option
+    sondage.options.push(newOption._id);
+    await sondage.save();
 
-    res.status(201).json({ message: "Option added successfully.", sondage });
+    res.status(201).json({ message: "Option added successfully.", option: newOption });
   } catch (error) {
     console.error("Error adding option:", error);
     res.status(500).json({ message: "Error adding option.", error });
   }
 });
 
-
-// Modify an option by ID
 router.put('/modify/:id', async (req, res) => {
   const { id } = req.params;
   const { label } = req.body;
@@ -47,7 +45,7 @@ router.put('/modify/:id', async (req, res) => {
     }
 
     option.libelle = label;
-    await option.save();  // Save the updated option
+    await option.save();  
 
     res.json({ message: "Option modified successfully.", option });
   } catch (error) {
@@ -56,7 +54,6 @@ router.put('/modify/:id', async (req, res) => {
   }
 });
 
-// Delete an option by ID
 router.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -65,6 +62,11 @@ router.delete('/delete/:id', async (req, res) => {
     if (!option) {
       return res.status(404).json({ message: "Option not found." });
     }
+
+    await Sondage.updateOne(
+      { options: id },
+      { $pull: { options: id } }
+    );
 
     res.json({ message: "Option deleted successfully." });
   } catch (error) {

@@ -22,9 +22,6 @@ app.set('views', './views');
 
 app.use(express.json()); 
 // In-memory data
-const users = [];
-const sondages = [];
-const userVotes = [];
 
 
 const userRoutes = require('./routes/authRoutes');
@@ -32,9 +29,7 @@ const sondageRoutes = require('./routes/surveyRoutes');
 const optionRoutes = require('./routes/optionRoutes');
 const voteRoutes = require('./routes/voteRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-app.locals.users = users;  
-app.locals.sondages = sondages;  
-app.locals.userVotes = userVotes;
+
 app.use(cookieParser());
 // Use routes
 app.use('/users', userRoutes);  
@@ -43,7 +38,7 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-app.use(auth)
+//app.use(auth)
 app.use('/sondages',sondageRoutes);
 app.use('/options',optionRoutes);
 app.use('/votes' ,voteRoutes);

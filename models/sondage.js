@@ -8,7 +8,7 @@ const SondageSchema = new Schema({
   dateCreation: { type: Date, default: Date.now },
   dateExpiration: { type: Date, required: true },
   statut: { type: String, enum: ['open', 'closed'], default: 'open' },
-  options: [Option.schema],
+  options: [{ type: Schema.Types.ObjectId, ref: 'Sondage', required: true }],
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 

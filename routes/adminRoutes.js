@@ -1,32 +1,38 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/user');
+const Sondage = require('../models/sondage');
 
-// Middleware for admin authentication (optional)
-const isAdmin = (req, res, next) => {
-  // Add your logic here to check admin rights
-  next();
-};
 
-// Admin dashboard
-router.get('/dashboard', isAdmin, (req, res) => {
-  res.render('admin/dashboard', {
-    users: req.app.locals.users,
-    sondages: req.app.locals.sondages,
-  });
+
+router.get('/dashboard', async (req, res) => {
+  try {
+    const users = await User.find();
+    const sondages = await Sondage.find().populate('user');
+    res.render('admin/dashboard', { users, sondages });
+  } catch (error) {
+    res.status(500).json({ message: 'Error loading dashboard.', error });
+  }
 });
 
-// View all users
-router.get('/users', isAdmin, (req, res) => {
-  res.render('admin/users', { users: req.app.locals.users });
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find();
+    res.render('admin/users', { users });
+  } catch (error) {
+    res.status(500).json({ message: 'Error loading users.', error });
+  }
+});
+router.get('/sondages', async (req, res) => {
+  try {
+    const sondages = await Sondage.find().populate('user');
+    res.render('admin/sondages', { sondages });
+  } catch (error) {
+    res.status(500).json({ message: 'Error loading sondages.', error });
+  }
 });
 
-// View all sondages
-router.get('/sondages', isAdmin, (req, res) => {
-  res.render('admin/sondages', { sondages: req.app.locals.sondages });
-});
-
-// Delete a sondage
-router.post('/sondages/delete/:id', isAdmin, (req, res) => {
+router.post('/sondages/delete/:id', (req, res) => {
   const { id } = req.params;
   const index = req.app.locals.sondages.findIndex(s => s.id == id);
   if (index !== -1) {
