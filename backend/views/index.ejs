@@ -1,10 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>EJS Test</title>
-</head>
-<body>
-  <h1>Welcome to EJS</h1>
-  <p>This is a test page rendered using EJS.</p>
-</body>
-</html>
+  <!DOCTYPE html>
+  <html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <script src="https://cdn.tailwindcss.com"></script> <!-- Tailwind CSS CDN -->
+  </head>
+
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+      <h2 class="text-2xl font-semibold text-center text-gray-700 mb-6">Login</h2>
+
+      <!-- Login Form -->
+      <form action="/login" method="POST">
+        <!-- Email Input -->
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter your email"
+            class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+
+        <!-- Password Input -->
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password"
+            class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit"
+          class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          Login
+        </button>
+      </form>
+
+      <!-- Error Message (Optional) -->
+      <div id="error-message" class="mt-4 text-red-500 text-center hidden">
+        Invalid email or password.
+      </div>
+
+
+    </div>
+
+  </body>
+
+  </html>
