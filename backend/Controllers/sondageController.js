@@ -1,7 +1,5 @@
-// controllers/sondageController.js
 const sondageService = require('../services/sondageService');
 
-// Create a sondage
 const createSondage = async (req, res) => {
   const { titre, description, userId, dateExpiration } = req.body;
 
@@ -13,7 +11,6 @@ const createSondage = async (req, res) => {
   }
 };
 
-// Modify an existing sondage
 const modifySondage = async (req, res) => {
   const { id } = req.params;
   const { titre, description, statut, dateExpiration } = req.body;

@@ -15,14 +15,12 @@ const path = require('path');
 
 
 
-app.set('views', path.join(__dirname, 'views')); // Make sure this points to the correct path
+app.set('views', path.join(__dirname, 'views')); 
 app.set('view engine', 'ejs');
 
-// Add the path module to resolve the directory
 
 
 app.use(express.json()); 
-// In-memory data
 
 
 const userRoutes = require('./routes/authRoutes');
@@ -39,7 +37,7 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-//app.use(auth)
+app.use(auth)
 app.use('/sondages',sondageRoutes);
 app.use('/options',optionRoutes);
 app.use('/votes' ,voteRoutes);

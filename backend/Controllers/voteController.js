@@ -1,4 +1,3 @@
-// controllers/voteController.js
 const voteService = require('../services/voteService');
 const castVote = async (req, res) => {
     const { userId, optionId } = req.body;
@@ -8,18 +7,14 @@ const castVote = async (req, res) => {
     }
   
     try {
-      // Call the voteService to cast the vote
       const result = await voteService.castVote(userId, optionId);
   
-      // If no result returned, handle it gracefully
       if (!result) {
         return res.status(400).json({ message: "Vote could not be cast." });
       }
   
-      // Send success response
       res.status(201).json({ message: "Vote cast successfully.", vote: result });
     } catch (error) {
-      // Detailed error message based on the specific error
       console.error("Error casting vote:", error);
       res.status(500).json({ message: "An error occurred while casting the vote.", error: error.message });
     }

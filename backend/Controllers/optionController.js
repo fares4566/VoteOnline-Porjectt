@@ -1,4 +1,3 @@
-// controllers/optionController.js
 const optionService = require('../services/optionService');
 
 const addOption = async (req, res) => {

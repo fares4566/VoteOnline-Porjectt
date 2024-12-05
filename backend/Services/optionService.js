@@ -1,4 +1,3 @@
-// services/optionService.js
 const Sondage = require('../models/sondage');
 const Option = require('../models/option');
 

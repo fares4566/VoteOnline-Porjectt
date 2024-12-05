@@ -1,5 +1,6 @@
 // authController.js
 const { registerUser, loginUser, updateUserProfile, getUserById } = require('../services/authService');
+const adminService = require('../services/adminService');
 
 // Register user
 const register = async (req, res) => {
@@ -12,21 +13,34 @@ const register = async (req, res) => {
   }
 };
 
+
 // Login user
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const { token, user } = await loginUser(email, password);
+
     res.cookie('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600000 
+      maxAge: 3600000,
     });
-    res.json({ message: 'Login successful', token, user });
+
+    if (user.role === 'user') {
+      return res.json({ message: 'Login successful', token, user });
+    }
+
+    const users = await adminService.getUsers();
+    const sondages = await adminService.getSondages();
+    const sondageStats = await adminService.getSondageStats(); 
+    const userStats = await adminService.getUserStats(); 
+
+    res.render('admin/dashboard', { token, user, sondageStats,users,sondages,userStats });
   } catch (error) {
-    res.status(500).json({ message: 'Error during login', error });
+    res.status(500).json({ message: 'Error during login', error: error.message });
   }
 };
+
 
 // Update profile
 const updateProfile = async (req, res) => {
@@ -49,7 +63,6 @@ const getUser = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving user', error });
   }
 };
-// controllers/userController.js
 
 
 

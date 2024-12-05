@@ -1,8 +1,6 @@
-// services/sondageService.js
 const Sondage = require('../models/sondage');
 const User = require('../models/user');
 
-// Create a new sondage
 const createSondage = async (titre, description, userId, dateExpiration) => {
   const user = await User.findById(userId);
   if (!user) {
@@ -22,7 +20,6 @@ const createSondage = async (titre, description, userId, dateExpiration) => {
   return newSondage;
 };
 
-// Modify an existing sondage
 const modifySondage = async (id, titre, description, statut, dateExpiration) => {
   const sondage = await Sondage.findById(id);
   if (!sondage) {
