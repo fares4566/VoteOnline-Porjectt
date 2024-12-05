@@ -1,7 +1,7 @@
 // routes/sondageRoutes.js
 const express = require('express');
 const router = express.Router();
-const sondageController = require('../controllers/sondageController');
+const sondageController = require('../Controllers/sondageController');
 
 // Route to create a sondage
 router.post('/create', sondageController.createSondage);

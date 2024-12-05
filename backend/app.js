@@ -8,17 +8,18 @@ const app = express();
 connectDB();
 const PORT = 3000;
 
+const path = require('path');
 
 
 
 
 
 
-
+app.set('views', path.join(__dirname, 'views')); // Make sure this points to the correct path
 app.set('view engine', 'ejs');
 
-// Define the folder where EJS templates are stored
-app.set('views', './views');
+// Add the path module to resolve the directory
+
 
 app.use(express.json()); 
 // In-memory data

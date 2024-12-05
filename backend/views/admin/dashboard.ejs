@@ -4,62 +4,199 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7fafc; /* Light gray background */
-      margin: 0;
-      padding: 0;
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  function loadUserDetails(userId) {
+  fetch(`/admin/users/${userId}`)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch user details');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Ensure sondages array exists
+      console.log(data);
+      
+      const sondagesList = data.sondages?.length
+        ? data.sondages
+            .map(
+              (sondage) => `
+                <li><strong>${sondage.titre}:</strong> ${sondage.description}</li>
+              `
+            )
+            .join('')
+        : '<p>No sondages available for this user.</p>';
+
+      // Dynamically update content
+      document.getElementById('user-details').innerHTML = `
+  <h2 class="text-2xl font-semibold mb-4">User Details</h2>
+  <p><strong>Name:</strong> ${data.user.nom}</p>
+  <p><strong>Email:</strong> ${data.user.email}</p>
+  <p><strong>Role:</strong> ${data.user.role}</p>
+  <h3 class="mt-6 text-xl font-medium">User's Sondages:</h3>
+  <div class="space-y-4 max-h-80 overflow-y-auto">
+    ${data.sondages.map(sondage => {
+      // Calculate the total votes for this sondage
+      const totalVotes = sondage.options.reduce((sum, option) => sum + option.votes, 0);
+
+      return `
+        <div class="border p-4 rounded-lg shadow-md relative">
+          <h4 class="text-xl font-semibold">${sondage.titre}</h4>
+          <p class="text-sm text-gray-500">Description: ${sondage.description}</p>
+          <p class="text-sm text-gray-500">Creation Date: ${new Date(sondage.dateCreation).toLocaleDateString()}</p>
+          <p class="text-sm text-gray-500">Expiration Date: ${new Date(sondage.dateExpiration).toLocaleDateString()}</p>
+          <p class="text-sm text-gray-500">Status: <span class="${sondage.statut === 'open' ? 'text-green-600' : 'text-red-600'}">${sondage.statut}</span></p>
+          
+          <!-- Total votes in the top right corner -->
+          <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+            ${totalVotes} votes
+          </div>
+
+          <div class="mt-4">
+            <h5 class="font-semibold">Options:</h5>
+            <ul class="space-y-2">
+              ${sondage.options.map(option => `
+                <li class="p-2 bg-gray-100 rounded-lg">
+                  <span class="font-semibold">${option.libelle}</span> - ${option.votes} votes
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  </div>
+`;
+
+
+    })
+    .catch((error) => console.error('Error:', error));
+}
+
+    // Function to display the selected section and hide others
+    function showContent(content) {
+      // Hide all sections
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.style.display = 'none';
+      });
+      
+      // Show the selected content section
+      document.getElementById(content).style.display = 'block';
+      if (content=="sondages"){
+        document.getElementById("user-details").style.display = 'none';
+      }
+      if(content=="users"){
+        document.getElementById("user-details").style.display = 'block';
+      }
+
     }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: #ffffff; /* White background for the card */
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-    }
-    h1 {
-      font-size: 2.5rem;
-      color: #2d3748; /* Dark gray */
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    p {
-      text-align: center;
-      color: #4a5568; /* Medium gray */
-      margin-bottom: 30px;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      margin: 10px 0;
-    }
-    a {
-      display: block;
-      padding: 15px;
-      text-align: center;
-      background-color: #3182ce; /* Blue background */
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      transition: background-color 0.3s;
-    }
-    a:hover {
-      background-color: #2b6cb0; /* Darker blue on hover */
-    }
-  </style>
+
+    // Initialize the dashboard with default content (Dashboard)
+    window.onload = () => showContent('dashboard');
+  </script>
 </head>
-<body>
-  <div class="container">
-    <h1>Admin Dashboard</h1>
-    <p>Manage users and polls:</p>
-    <ul>
-      <li><a href="/admin/users">Manage Users</a></li>
-      <li><a href="/admin/sondages">Manage Sondages</a></li>
-    </ul>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+  <div class="flex">
+    <!-- Vertical Navbar -->
+    <div class="w-1/5 bg-blue-500 text-white h-screen">
+      <div class="p-6">
+        <h1 class="text-2xl font-bold mb-6">Admin Dashboard</h1>
+        <nav>
+          <ul>
+            <li class="mb-4">
+              <a href="javascript:void(0);" onclick="showContent('sondages')" class="block py-2 px-4 hover:bg-blue-600 rounded">Manage Sondages</a>
+            </li>
+            <li>
+              <a href="javascript:void(0);" onclick="showContent('users')" class="block py-2 px-4 hover:bg-blue-600 rounded">Manage Users</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="w-4/5 p-6">
+      <h2 class="text-xl font-semibold mb-4">Welcome to the Admin Dashboard</h2>
+      <p class="text-gray-700">Use the navigation menu to manage users and polls.</p>
+
+      <!-- Dashboard Content -->
+      <div id="dashboard" class="content-section" style="display: none;">
+        <h2 class="text-xl font-semibold mb-4">Dashboard</h2>
+        <p class="text-gray-700">This is your main admin dashboard.</p>
+      </div>
+
+      <!-- Manage Sondages -->
+      <div id="sondages" class="content-section" style="display: none;">
+        <h1 class="text-2xl font-semibold mb-4">Manage Sondages</h1>
+
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+          <thead>
+            <tr class="bg-blue-500 text-white">
+              <th class="py-2 px-4 text-left">Title</th>
+              <th class="py-2 px-4 text-left">Description</th>
+              <th class="py-2 px-4 text-left">Status</th>
+              <th class="py-2 px-4 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sondages.forEach(sondage => { %>
+              <tr class="border-b">
+                <td class="py-2 px-4"><%= sondage.titre %></td>
+                <td class="py-2 px-4"><%= sondage.description %></td>
+                <td class="py-2 px-4"><%= sondage.statut %></td>
+                <td class="py-2 px-4">
+                 
+                  <form action="/admin/sondages/delete/<%= sondage._id %>" method="POST" style="display: inline;">
+                    <button type="submit" class="text-red-500 hover:text-red-700 ml-4">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+
+        <a href="javascript:void(0);" onclick="showContent('dashboard')" class="mt-4 inline-block text-blue-500">Back to Dashboard</a>
+      </div>
+
+      <!-- Manage Users -->
+      <div id="users" class="content-section" style="display: none;">
+        <h1 class="text-2xl font-semibold mb-4">Manage Users</h1>
+
+        <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+          <thead>
+            <tr class="bg-blue-500 text-white">
+              <th class="py-2 px-4 text-left">Name</th>
+              <th class="py-2 px-4 text-left">Email</th>
+              <th class="py-2 px-4 text-left">Role</th>
+              <th class="py-2 px-4 text-left">Sondages Count</th>
+              <th class="py-2 px-4 text-left">Last Sondage</th>
+              <th class="py-2 px-4 text-left">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(user => { %>
+              <tr class="border-b">
+                <td class="py-2 px-4"><%= user.nom %></td>
+                <td class="py-2 px-4"><%= user.email %></td>
+                <td class="py-2 px-4"><%= user.role %></td>
+                <td class="py-2 px-4"><%= user.sondageCount %></td>
+                <td class="py-2 px-4"><%= user.lastSondage %></td>
+                <td class="py-2 px-4">
+                  <a href="javascript:void(0);" onclick="loadUserDetails('<%= user._id %>')" class="text-blue-500 hover:text-blue-700">View Details</a>
+
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- User Details Section -->
+      <div id="user-details" class="mt-4">
+        <!-- User details will be loaded here dynamically -->
+      </div>
+    </div>
   </div>
 </body>
 </html>

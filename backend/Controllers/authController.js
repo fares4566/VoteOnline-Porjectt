@@ -49,5 +49,8 @@ const getUser = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving user', error });
   }
 };
+// controllers/userController.js
 
-module.exports = { register, login, updateProfile, getUser };
+
+
+module.exports = {  register, login, updateProfile, getUser };
